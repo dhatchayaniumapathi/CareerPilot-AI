@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import axiosClient from "../api/axiosClient";
 import {
@@ -11,7 +12,7 @@ import {
 } from "../components/Icons";
 
 export default function Dashboard() {
-  const { user, token, logout } = useAuth();
+  const { user, logout } = useAuth();
   const [profileData, setProfileData] = useState(null);
   const [profileLoading, setProfileLoading] = useState(false);
   const [profileError, setProfileError] = useState("");
@@ -84,9 +85,9 @@ export default function Dashboard() {
                   <span className="info-value badge-id">#{user?.id || "N/A"}</span>
                 </div>
                 <div className="info-item">
-                  <span className="info-label">Session Token</span>
-                  <span className="info-value token-preview">
-                    {token ? `${token.substring(0, 16)}...` : "None"}
+                  <span className="info-label">Authentication</span>
+                  <span className="info-value" style={{ color: "#34D399" }}>
+                    ✓ JWT Verified
                   </span>
                 </div>
               </div>
@@ -143,14 +144,19 @@ export default function Dashboard() {
 
         {/* Feature Teasers */}
         <div className="features-preview">
-          <h2 className="section-title">AI Career Modules (Phase 2)</h2>
+          <h2 className="section-title">AI Career Modules</h2>
           <div className="features-grid">
-            <div className="feature-card">
-              <div className="feature-status">Coming Soon</div>
+            <div className="feature-card feature-card-active">
+              <div className="feature-status status-active">Available Now</div>
               <h4 className="feature-title">AI Resume Tailoring</h4>
               <p className="feature-desc">
-                Matches your skills to target job descriptions with keyword optimization.
+                Upload your PDF resume and target job description to receive transparent estimated match scores, missing skill detection, and honest tailored bullets.
               </p>
+              <div style={{ marginTop: "1rem" }}>
+                <Link to="/resume-tailor" className="btn btn-primary btn-sm">
+                  Launch Resume Tailor →
+                </Link>
+              </div>
             </div>
             <div className="feature-card">
               <div className="feature-status">Coming Soon</div>

@@ -5,6 +5,7 @@ const express = require("express");
 const cors = require("cors");
 
 const authRoutes = require("./routes/authRoutes");
+const resumeRoutes = require("./routes/resumeRoutes");
 const { notFoundHandler, errorHandler } = require("./middleware/errorHandler");
 
 const app = express();
@@ -33,6 +34,9 @@ app.get("/api/health", (req, res) => {
 
 // Authentication routes
 app.use("/api/auth", authRoutes);
+
+// AI Resume Tailoring routes (protected)
+app.use("/api/resume", resumeRoutes);
 
 // Error handling middleware
 app.use(notFoundHandler);

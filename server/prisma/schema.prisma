@@ -8,10 +8,33 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  name      String
-  email     String   @unique
-  password  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id             Int              @id @default(autoincrement())
+  name           String
+  email          String           @unique
+  password       String
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  resumeAnalyses ResumeAnalysis[]
+}
+
+model ResumeAnalysis {
+  id                   Int      @id @default(autoincrement())
+  userId               Int
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  jobTitle             String
+  jobDescription       String   @db.Text
+  originalResumeText   String   @db.Text
+  filename             String
+  matchScore           Int
+  scoreBreakdown       Json
+  matchingSkills       String[]
+  missingSkills        String[]
+  keyStrengths         String[]
+  tailoringSuggestions Json
+  tailoredSummary      String   @db.Text
+  tailoredBulletPoints Json
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@index([userId])
 }

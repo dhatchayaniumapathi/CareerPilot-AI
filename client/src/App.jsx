@@ -5,6 +5,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
+import ResumeTailor from "./pages/ResumeTailor";
 
 function RootRedirect() {
   const { isAuthenticated } = useAuth();
@@ -27,6 +28,14 @@ export default function App() {
                 element={
                   <ProtectedRoute>
                     <Dashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/resume-tailor"
+                element={
+                  <ProtectedRoute>
+                    <ResumeTailor />
                   </ProtectedRoute>
                 }
               />
