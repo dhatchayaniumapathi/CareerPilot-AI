@@ -33,6 +33,9 @@ export default function Navbar() {
               <Link to="/resume-tailor" className="nav-link">
                 Resume Tailor
               </Link>
+              <Link to="/trajectory" className="nav-link">
+                Career Simulator
+              </Link>
               <span className="user-greeting">
                 Hi, <strong>{user?.name?.split(" ")[0] || "User"}</strong>
               </span>

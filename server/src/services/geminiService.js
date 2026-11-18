@@ -70,59 +70,81 @@ ${resumeText}
 
 Analyze this resume against the job description following the strict guidelines. Return ONLY the JSON response.`;
 
-  try {
-    const response = await ai.models.generateContent({
-      model: modelName,
-      contents: prompt,
-      config: {
-        systemInstruction,
-        responseMimeType: "application/json",
-        temperature: 0.2, // Low temperature for high factual adherence
-      },
-    });
+  const maxAttempts = 4;
+  const backoffs = [2500, 4500, 7500];
+  let lastError = null;
 
-    const responseText = response.text ? response.text.trim() : "";
-    if (!responseText) {
-      throw new Error("Empty response received from Gemini API");
-    }
-
-    // Parse JSON
-    let parsedData;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
-      parsedData = JSON.parse(responseText);
-    } catch {
-      // In case wrapped in markdown code fence
-      const cleanJson = responseText.replace(/^```json/m, "").replace(/```$/m, "").trim();
-      parsedData = JSON.parse(cleanJson);
+      const response = await ai.models.generateContent({
+        model: modelName,
+        contents: prompt,
+        config: {
+          systemInstruction,
+          responseMimeType: "application/json",
+          temperature: 0.2, // Low temperature for high factual adherence
+        },
+      });
+
+      const responseText = response.text ? response.text.trim() : "";
+      if (!responseText) {
+        throw new Error("Empty response received from Gemini API");
+      }
+
+      // Parse JSON
+      let parsedData;
+      try {
+        parsedData = JSON.parse(responseText);
+      } catch {
+        // In case wrapped in markdown code fence
+        const cleanJson = responseText.replace(/^```json/m, "").replace(/```$/m, "").trim();
+        parsedData = JSON.parse(cleanJson);
+      }
+
+      // Sanitize and validate parsed structure
+      const matchScore = Math.max(0, Math.min(100, Math.round(Number(parsedData.matchScore) || 50)));
+
+      return {
+        matchScore,
+        scoreBreakdown: parsedData.scoreBreakdown || {
+          skillsAlignment: matchScore,
+          experienceAlignment: matchScore,
+          roleFit: matchScore,
+          methodology: "Calculated based on detected skills overlap and experience relevance.",
+        },
+        matchingSkills: Array.isArray(parsedData.matchingSkills) ? parsedData.matchingSkills : [],
+        missingSkills: Array.isArray(parsedData.missingSkills) ? parsedData.missingSkills : [],
+        keyStrengths: Array.isArray(parsedData.keyStrengths) ? parsedData.keyStrengths : [],
+        tailoringSuggestions: Array.isArray(parsedData.tailoringSuggestions)
+          ? parsedData.tailoringSuggestions
+          : [],
+        tailoredSummary: String(parsedData.tailoredSummary || ""),
+        tailoredBulletPoints: Array.isArray(parsedData.tailoredBulletPoints)
+          ? parsedData.tailoredBulletPoints
+          : [],
+      };
+    } catch (err) {
+      lastError = err;
+      const errMsg = err.message || "";
+      const isTransient =
+        errMsg.includes("503") ||
+        errMsg.includes("UNAVAILABLE") ||
+        errMsg.includes("high demand") ||
+        errMsg.includes("429") ||
+        errMsg.includes("RESOURCE_EXHAUSTED");
+
+      if (isTransient && attempt < maxAttempts) {
+        const delay = backoffs[attempt - 1] || 5000;
+        console.warn(`[GeminiResume] Transient error on attempt ${attempt}. Retrying in ${delay / 1000}s...`);
+        await new Promise((resolve) => setTimeout(resolve, delay));
+        continue;
+      }
+
+      if (err.statusCode) throw err;
+      const error = new Error(`AI Resume Analysis failed: ${errMsg}`);
+      error.statusCode = 502;
+      throw error;
     }
-
-    // Sanitize and validate parsed structure
-    const matchScore = Math.max(0, Math.min(100, Math.round(Number(parsedData.matchScore) || 50)));
-
-    return {
-      matchScore,
-      scoreBreakdown: parsedData.scoreBreakdown || {
-        skillsAlignment: matchScore,
-        experienceAlignment: matchScore,
-        roleFit: matchScore,
-        methodology: "Calculated based on detected skills overlap and experience relevance.",
-      },
-      matchingSkills: Array.isArray(parsedData.matchingSkills) ? parsedData.matchingSkills : [],
-      missingSkills: Array.isArray(parsedData.missingSkills) ? parsedData.missingSkills : [],
-      keyStrengths: Array.isArray(parsedData.keyStrengths) ? parsedData.keyStrengths : [],
-      tailoringSuggestions: Array.isArray(parsedData.tailoringSuggestions)
-        ? parsedData.tailoringSuggestions
-        : [],
-      tailoredSummary: String(parsedData.tailoredSummary || ""),
-      tailoredBulletPoints: Array.isArray(parsedData.tailoredBulletPoints)
-        ? parsedData.tailoredBulletPoints
-        : [],
-    };
-  } catch (err) {
-    if (err.statusCode) throw err;
-    const error = new Error(`AI Resume Analysis failed: ${err.message}`);
-    error.statusCode = 502;
-    throw error;
   }
 }
 

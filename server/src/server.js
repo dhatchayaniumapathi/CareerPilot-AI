@@ -6,6 +6,7 @@ const cors = require("cors");
 
 const authRoutes = require("./routes/authRoutes");
 const resumeRoutes = require("./routes/resumeRoutes");
+const trajectoryRoutes = require("./routes/trajectoryRoutes");
 const { notFoundHandler, errorHandler } = require("./middleware/errorHandler");
 
 const app = express();
@@ -37,6 +38,9 @@ app.use("/api/auth", authRoutes);
 
 // AI Resume Tailoring routes (protected)
 app.use("/api/resume", resumeRoutes);
+
+// Career Trajectory Simulator routes (protected)
+app.use("/api/trajectory", trajectoryRoutes);
 
 // Error handling middleware
 app.use(notFoundHandler);

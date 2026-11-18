@@ -158,12 +158,17 @@ export default function Dashboard() {
                 </Link>
               </div>
             </div>
-            <div className="feature-card">
-              <div className="feature-status">Coming Soon</div>
+            <div className="feature-card feature-card-active">
+              <div className="feature-status status-active">Available Now</div>
               <h4 className="feature-title">Career Trajectory Simulator</h4>
               <p className="feature-desc">
-                Explore personalized pathways from junior to executive engineering roles.
+                Build your verified career profile, benchmark against target roles, identify skill gaps, and execute personalized project roadmaps.
               </p>
+              <div style={{ marginTop: "1rem" }}>
+                <Link to="/trajectory" className="btn btn-primary btn-sm">
+                  Launch Career Simulator →
+                </Link>
+              </div>
             </div>
             <div className="feature-card">
               <div className="feature-status">Coming Soon</div>
